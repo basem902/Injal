@@ -567,17 +567,19 @@ body {
     text-decoration: underline;
 }
 
-/* تصميم وسائل التواصل الاجتماعي */
-.social-links {
-    order: 3;
-    display: flex;
-    justify-content: center;
-    gap: 10px; /* إضافة مسافة بين أيقونات وسائل التواصل */
-}
-
+/* تصميم وسائل التواصل الاجتماعي مع إضافة حدود سوداء */
 .social-links img {
     width: 30px;
     margin: 0 10px;
+    border: 2px solid #000000; /* إضافة حدود سوداء */
+    border-radius: 50%; /* جعل الحدود دائرية */
+    padding: 5px; /* إضافة مسافة داخلية بين الأيقونة والحدود */
+}
+
+/* عند التمرير على الأيقونات */
+.social-links img:hover {
+    transform: scale(1.1); /* تكبير الأيقونة عند التمرير */
+    border-color: #ffffff; /* تغيير لون الحدود عند التمرير */
 }
 
 /* تصميم الجزء السفلي من الفوتر */
