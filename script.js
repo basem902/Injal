@@ -1,83 +1,55 @@
-// النافذة المنبثقة
-window.onload = function () {
-    const popup = document.getElementById('popup');
-    const closePopup = document.getElementById('closePopup');
+async function submitForm(event) {
+    event.preventDefault(); // منع الإرسال الافتراضي للنموذج
 
-    closePopup.addEventListener('click', () => {
-        popup.style.display = 'none';
-    });
+    const name = document.getElementById('name').value;
+    const phone = document.getElementById('phone').value;
+    const email = document.getElementById('email').value;
+    const question1 = document.querySelector('input[name="question1"]:checked').value;
+    const question2 = document.querySelector('input[name="question2"]:checked').value;
+    const question3 = document.querySelector('input[name="question3"]:checked').value;
+    const question4 = document.getElementById('question4').value;
+    const question5 = document.getElementById('question5').value;
 
-    setTimeout(() => {
-        popup.style.display = 'none';
-    }, 10000); // إخفاء النافذة بعد 10 ثوانٍ
-};
+    const data = {
+        name,
+        phone,
+        email,
+        question1,
+        question2,
+        question3,
+        question4,
+        question5
+    };
 
-// تشغيل العداد الرقمي بالأيام والساعات والدقائق والثواني
-function countdownTimer(daysId, hoursId, minutesId, secondsId, targetDate) {
-    setInterval(() => {
-        const now = new Date().getTime();
-        const distance = targetDate - now;
+    // هنا نضع رابط Google Apps Script الذي حصلت عليه
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwlrLOI3b10a2Rwr8fH2MfZceeDaDM3xhBPFX6KqV0vnniOLiSzghueI4U4jBZU4N3ZDA/exec';
 
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    try {
+        // إرسال البيانات إلى Google Sheets عبر Google Apps Script
+        const response = await fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
 
-        document.getElementById(daysId).innerHTML = days;
-        document.getElementById(hoursId).innerHTML = hours;
-        document.getElementById(minutesId).innerHTML = minutes;
-        document.getElementById(secondsId).innerHTML = seconds;
+        const result = await response.json();
 
-        if (distance < 0) {
-            document.getElementById(daysId).innerHTML = "0";
-            document.getElementById(hoursId).innerHTML = "0";
-            document.getElementById(minutesId).innerHTML = "0";
-            document.getElementById(secondsId).innerHTML = "0";
+        if (result.status === 'success') {
+            // بعد نجاح الحفظ، أرسل رسالة واتساب
+            const whatsappMessage = `شكرًا لك ${name} على زيارتك لجناحنا في المعرض! نأمل أنك استمتعت بتجربتك. يمكنك زيارة موقعنا عبر الرابط التالي: https://example.com`;
+            const whatsappURL = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(whatsappMessage)}`;
+
+            // فتح الواتساب في نافذة جديدة
+            window.open(whatsappURL, '_blank');
+            
+            alert('تم حفظ البيانات بنجاح وتم فتح الواتساب لإرسال رسالة الشكر.');
+        } else {
+            alert('حدث خطأ في حفظ البيانات.');
         }
-    }, 1000);
-}
-
-const targetDate = new Date('2024-10-05T16:00:00').getTime(); // تحديد التاريخ المستهدف
-
-// تشغيل العداد في الشاشة المنبثقة
-countdownTimer('popup-days', 'popup-hours', 'popup-minutes', 'popup-seconds', targetDate);
-
-// تشغيل العداد في الصفحة الرئيسية
-countdownTimer('main-days1', 'main-hours1', 'main-minutes1', 'main-seconds1', targetDate);
-countdownTimer('main-days2', 'main-hours2', 'main-minutes2', 'main-seconds2', targetDate);
-countdownTimer('main-days3', 'main-hours3', 'main-minutes3', 'main-seconds3', targetDate);
-
-
-// إضافة الأنيميشن عند التمرير
-const elements = document.querySelectorAll('.animate');
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-        }
-    });
-}, {
-    threshold: 0.5
-});
-
-elements.forEach(el => observer.observe(el));
-
-// إظهار أو إخفاء أيقونة السهم عند التمرير
-window.onscroll = function() {
-    const scrollToTopButton = document.getElementById('scrollToTop');
-    if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
-        scrollToTopButton.style.display = "block"; // إظهار الأيقونة بعد التمرير للأسفل
-    } else {
-        scrollToTopButton.style.display = "none"; // إخفاء الأيقونة عندما يكون المستخدم في أعلى الصفحة
+    } catch (error) {
+        console.error('Error:', error);
+        alert('حدث خطأ في الاتصال بالخادم.');
     }
-};
-
-// عند النقر على أيقونة السهم، يتم العودة لأعلى الصفحة
-document.getElementById('scrollToTop').addEventListener('click', function(event) {
-    event.preventDefault(); // منع الإجراء الافتراضي للرابط
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // التنقل بسلاسة إلى أعلى الصفحة
-    });
-});
+}
